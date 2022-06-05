@@ -1,4 +1,4 @@
-from orator import DatabaseManager, Model
+from orator import DatabaseManager, Model, Schema
 
 config = {
     'sqlite': {
@@ -12,4 +12,5 @@ config = {
 }
 
 db = DatabaseManager(config)
+schema = Schema(db)
 Model.set_connection_resolver(db)
