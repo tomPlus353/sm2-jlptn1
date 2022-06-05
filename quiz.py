@@ -31,7 +31,7 @@ def getActiveCards():
     #collects 
     dueCardsCollection = Card.join("sentences", "sentences.card_id", "=", "cards.id") \
     .where_raw('length(kanji) > 1' ) \
-    .where('date_due', ">=", datetime.today().strftime(DUE_DATE_FORMAT)) \
+    .where('date_due', "<=", datetime.today().strftime(DUE_DATE_FORMAT)) \
     .group_by("cards.id") \
     .limit(MAX_ACTIVE_CARDS) \
     .get() 
@@ -44,7 +44,6 @@ def getActiveCards():
         cardsNeeded = MIN_ACTIVE_CARDS - count #should always return a number greater than zero
         newCardsCollection = Card.join("sentences", "sentences.card_id", "=", "cards.id") \
         .where_raw('length(kanji) > 1' ) \
-        .where('date_due', ">=", datetime.today().strftime(DUE_DATE_FORMAT)) \
         .limit(cardsNeeded) \
         .group_by("cards.id") \
         .order_by(db.raw('RANDOM()')) \
