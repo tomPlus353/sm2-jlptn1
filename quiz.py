@@ -6,29 +6,36 @@ from Models.config import *
 import Models.card as card
 from datetime import datetime
 import random, os, time
+from supermemo2 import SMTwo
 
 
 Card = card.Card
-MIN_ACTIVE_CARDS = 3
+MIN_ACTIVE_CARDS = 1
+MAX_ACTIVE_CARDS = 3
+SKIP_QUIZ = True #skip the actual quiz as if all answers are correct
+DUE_DATE_FORMAT = "%Y-%m-%d"
 
 
 def startNewQuiz():
     print("start new quiz")
     cards = getActiveCards()
     print("total cards found: ", cards.count())
-    
     for index in range(len(cards)):
+        cards[index].initializeWrongCounts()
+        if SKIP_QUIZ:
+            cards[index].setPerfectQuiz();
         print(cards[index].to_dict())
     quiz(cards)
 
 def getActiveCards():
+    #collects 
     dueCardsCollection = Card.join("sentences", "sentences.card_id", "=", "cards.id") \
     .where_raw('length(kanji) > 1' ) \
-    .where('date_due', "<=", "date('now')") \
+    .where('date_due', ">=", datetime.today().strftime(DUE_DATE_FORMAT)) \
     .group_by("cards.id") \
+    .limit(MAX_ACTIVE_CARDS) \
     .get() 
     count = dueCardsCollection.count()
-    print(dueCardsCollection.to_json())
     #first check if there are enough  cards that are due today
     if count >= MIN_ACTIVE_CARDS:
         return dueCardsCollection
@@ -37,7 +44,7 @@ def getActiveCards():
         cardsNeeded = MIN_ACTIVE_CARDS - count #should always return a number greater than zero
         newCardsCollection = Card.join("sentences", "sentences.card_id", "=", "cards.id") \
         .where_raw('length(kanji) > 1' ) \
-        .where('date_due', ">", "date('now')") \
+        .where('date_due', ">=", datetime.today().strftime(DUE_DATE_FORMAT)) \
         .limit(cardsNeeded) \
         .group_by("cards.id") \
         .order_by(db.raw('RANDOM()')) \
@@ -48,7 +55,7 @@ def quiz(activeGroup):
     print("Stage 1: Reading")
     canRead = False
     while canRead == False:
-        term = activeGroup[random.randint(0,len(activeGroup)-1)]
+        term = random.choice(activeGroup)
         if term.reading_score < 2:
             testReading(term)
         twoCount = 0
@@ -57,38 +64,38 @@ def quiz(activeGroup):
                 twoCount += 1
         if twoCount == len(activeGroup):
             canRead = True
-    # print("Stage 2: Writing\nGet out a pen and paper for this next round.")
-    # canWrite = False
-    # while canWrite == False:
-    #     term = activeGroup[random.randint(0,len(activeGroup)-1)]
-    #     if term[4] < 2:
-    #         testWriting(term)
-    #     twoCount = 0
-    #     for i in activeGroup:
-    #         if i[4] == 2:
-    #             twoCount += 1
-    #     if twoCount == len(activeGroup):
-    #         break
-    #         #canWrite == True  (program stalls here for some reason)
+    print("Stage 2: Writing\nGet out a pen and paper for this next round.")
+    canWrite = False
+    while canWrite == False:
+        term = random.choice(activeGroup)
+        if term.writing_score < 2:
+            testWriting(term)
+        twoCount = 0
+        for i in activeGroup:
+            if i.writing_score == 2:
+                twoCount += 1
+        if twoCount == len(activeGroup):
+            break
+            #canWrite == True  (program stalls here for some reason)
             
-    # print("Stage 3: Meaning")
-    # canUnderstand = False
-    # while canUnderstand == False:
-    #     term = activeGroup[random.randint(0,len(activeGroup)-1)]
-    #     if term[5] < 2:
-    #         testMeaning(term)
-    #     twoCount = 0
-    #     for i in activeGroup:
-    #         if i[5] == 2:
-    #             twoCount += 1
-    #     if twoCount == len(activeGroup):
-    #         break
-    #         #canUnderstand == True (ditto as line 74)
-    print(f"All Done! {randPraise()}")
-    answer = input("Do you want to play again?<yes/no>\n>")
-    if answer == "no":
+    print("Stage 3: Meaning")
+    canUnderstand = False
+    while canUnderstand == False:
+        term = random.choice(activeGroup)
+        if term.understanding_score < 2:
+            testMeaning(term)
+        twoCount = 0
+        for i in activeGroup:
+            if i.understanding_score == 2:
+                twoCount += 1
+        if twoCount == len(activeGroup):
+            break
+            #canUnderstand == True (ditto as line 74)
+    saveResults(activeGroup)
+    answer = input("Do you want to play again?<はい/いいえ>\n>")
+    if answer == "いいえ":
         print("Goodbye")
-    if answer == "yes":
+    if answer == "はい":
         startNewQuiz()
 
 #these three functions test different aspects of the target language
@@ -97,6 +104,7 @@ def testReading(card):
     answer = input(f"How do you write {card.kanji} in kana? \nHint: English definition: {card.definition}")
     if answer != card.kana:
         card.reading_score = 0
+        card.wrongRead += 1
         print(f"\n\nIncorrect. The correct answer was:\n {card.kana}.")
         time.sleep(1)
     else:
@@ -105,28 +113,58 @@ def testReading(card):
 
 #show reading + definition. User need to write the Kanji form and self check.
 def testWriting(card):
-    print(f"\n\nHow do you write {card[1]} in Kanji? Try writing my hand. Hint: English definition: {card[2]}")
-    time.sleep(1)
+    print(f"\n\nHow do you write {card.kana} in Kanji? Try writing my hand. Hint: English definition: {card.definition}")
+    time.sleep(3)
     input('Ok, did you manage to write out the Kanji? Hit "Enter" to continue.')
-    answer = input(f'{card[1]} is written as {card[0]}.\n\nWere you correct?[yes/no]')
-    if answer.lower() == "no":
-        card[4] == 0
+    answer = input(f'{card.kana} is written as {card.kanji}.\n\nWere you correct?[はい/いいえ]')
+    if answer.lower() == "いいえ":
+        card.writing_score = 0
+        card.wrongWrite += 1
         print("Incorrect")
         time.sleep(1)
-    elif answer.lower() == "yes":
-        card[4] += 1
+    elif answer.lower() == "はい":
+        card.writing_score += 1
         print(randPraise())
 
 #Show English Definition. User Responds with the Kanji form.
 def testMeaning(card):
-    answer = input(f"\n\nWhat does \"{card[2]}\" mean in Japanese?\nReply with Kanji form if it exists.\n")
-    if answer != card[0]:
-        card[5] = 0
-        print(f"\nIncorrect. The correct answer was:\n {card[0]},\n with the reading of:\n {card[1]}.")
+    answer = input(f"\n\nWhat does \"{card.definition}\" mean in Japanese?\nReply with Kanji form if it exists.\n")
+    if answer != card.kanji:
+        card.understanding_score = 0
+        card.wrongMean += 1
+        print(f"\nIncorrect. The correct answer was:\n {card.kanji},\n with the reading of:\n {card.kana}.")
         time.sleep(1)
     else:
-        card[5] += 1
+        card.understanding_score += 1
         print(randPraise())
+
+def saveResults(activeGroup):
+    print("saving your results..");
+    for card in activeGroup:
+        quality = card.calculateAverageQuality()
+        if not card.due_date:
+            print("update for first review")
+            print("quality:", quality);
+            review = SMTwo.first_review(quality);
+            print("review_date:",review.review_date);
+            print("easiness:",review.easiness);
+            print("interval:",review.interval);
+            print("repetitions:",review.repetitions);
+            dueDate = review.review_date.strftime(DUE_DATE_FORMAT);
+            print("due date: ", dueDate)
+            result = db.table("cards").where("id", card.card_id).update({"due_date": dueDate, 
+            "easiness": review.easiness,
+            "interval":review.interval,
+            "repetitions": review.repetitions
+            })
+            print(result)
+        else:
+            print("update for 2nd review+")
+
+         
+
+
+
 
 def clear():
     # for windows command console
