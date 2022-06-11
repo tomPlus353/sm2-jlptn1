@@ -22,8 +22,8 @@ class Card(Model):
        self.understanding_score = 2
 
        self.wrongRead = 1
-       self.wrongWrite = 1
-       self.wrongMean = 2
+       self.wrongWrite = 0
+       self.wrongMean = 0
        #self.due_date = date.today()
 
     def calculateAverageQuality(self):
@@ -42,17 +42,3 @@ class Card(Model):
     def sentences(self):
         Sentence = sentence.Sentence
         return Sentence
-
-#debugging
-# testCard = Card.join("sentences", "sentences.card_id", "=", "cards.id") \
-# .where("sentences.id", "=", "5000" ) \
-# .get()
-
-# for card in testCard:
-#     print(card.kanji)
-#     print(card.sentence)
-#     print(card.kana)
-#     print(card.definition)
-# print(testCard.count())
-
-#.where("sentences.sentence", "LIKE", "%あ%" ) \

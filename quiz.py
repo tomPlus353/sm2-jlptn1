@@ -10,9 +10,9 @@ from supermemo2 import SMTwo
 
 
 Card = card.Card
-MIN_ACTIVE_CARDS = 1
+MIN_ACTIVE_CARDS = 3
 MAX_ACTIVE_CARDS = 3
-SKIP_QUIZ = True #skip the actual quiz as if all answers are correct
+SKIP_QUIZ = False #skip the actual quiz as if all answers are correct
 DUE_DATE_FORMAT = "%Y-%m-%d"
 
 
@@ -31,10 +31,10 @@ def getActiveCards():
     #collects 
     dueCardsCollection = Card.join("sentences", "sentences.card_id", "=", "cards.id") \
     .where_raw('length(kanji) > 1' ) \
-    .where('date_due', "<=", datetime.today().strftime(DUE_DATE_FORMAT)) \
+    .where('due_date', "<=", datetime.today().strftime(DUE_DATE_FORMAT)) \
     .group_by("cards.id") \
     .limit(MAX_ACTIVE_CARDS) \
-    .get() 
+    .get()
     count = dueCardsCollection.count()
     #first check if there are enough  cards that are due today
     if count >= MIN_ACTIVE_CARDS:
@@ -156,9 +156,23 @@ def saveResults(activeGroup):
             "interval":review.interval,
             "repetitions": review.repetitions
             })
-            print(result)
+            print("number updated: ",result)
         else:
             print("update for 2nd review+")
+            print("quality:", quality);
+            review = SMTwo(card.easiness, card.interval, card.repetitions).review(quality);
+            print("next review_date:",review.review_date);
+            print("new easiness:",review.easiness);
+            print("new interval:",review.interval);
+            print("new repetitions:",review.repetitions);
+            dueDate = review.review_date.strftime(DUE_DATE_FORMAT);
+            print("due date: ", dueDate)
+            result = db.table("cards").where("id", card.card_id).update({"due_date": dueDate, 
+            "easiness": review.easiness,
+            "interval":review.interval,
+            "repetitions": review.repetitions
+            })
+            print("number updated: ",result)
 
          
 
