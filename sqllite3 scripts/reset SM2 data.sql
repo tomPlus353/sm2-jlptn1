@@ -1,0 +1,1 @@
+UPDATE cards SET due_date = NULL, easiness = NULL, repetitions = NULL, interval = NULL;

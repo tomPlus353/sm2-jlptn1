@@ -5,7 +5,7 @@ sys.path.append("c:\\Users\\tomas\\Code\\myPython\\Multi-Side Flashcard Project\
 from Models.config import *
 import Models.card as card
 from datetime import datetime
-import random, os, time
+import random, os, time, shelve
 from supermemo2 import SMTwo
 
 
@@ -14,6 +14,7 @@ MIN_ACTIVE_CARDS = 3
 MAX_ACTIVE_CARDS = 3
 SKIP_QUIZ = False #skip the actual quiz as if all answers are correct
 DUE_DATE_FORMAT = "%Y-%m-%d"
+usingBackup = False
 
 
 def startNewQuiz():
@@ -28,6 +29,10 @@ def startNewQuiz():
     quiz(cards)
 
 def getActiveCards():
+    backupCards = getBackupCards()
+    if usingBackup:
+        print("using backup cards")
+        return backupCards
     #collects 
     dueCardsCollection = Card.join("sentences", "sentences.card_id", "=", "cards.id") \
     .where_raw('length(kanji) > 1' ) \
@@ -50,52 +55,80 @@ def getActiveCards():
         .get() 
         return  dueCardsCollection.merge(newCardsCollection) #returns collection with both completely new cards and cards that are due today.
 
+def getBackupCards():
+    d = shelve.open('N1 vocab data backup')
+    print("opening backup")
+    if "emergency_backup" in d.keys():
+        print("need to use backup cards")
+        backupCards = d["emergency_backup"]
+        global usingBackup
+        usingBackup = True
+        d.close()
+        return backupCards
+    d.close()
+    return None
+
+
 def quiz(activeGroup):
-    print("Stage 1: Reading")
-    canRead = False
-    while canRead == False:
-        term = random.choice(activeGroup)
-        if term.reading_score < 2:
-            testReading(term)
-        twoCount = 0
-        for i in activeGroup:
-            if i.reading_score == 2:
-                twoCount += 1
-        if twoCount == len(activeGroup):
-            canRead = True
-    print("Stage 2: Writing\nGet out a pen and paper for this next round.")
-    canWrite = False
-    while canWrite == False:
-        term = random.choice(activeGroup)
-        if term.writing_score < 2:
-            testWriting(term)
-        twoCount = 0
-        for i in activeGroup:
-            if i.writing_score == 2:
-                twoCount += 1
-        if twoCount == len(activeGroup):
-            break
-            #canWrite == True  (program stalls here for some reason)
-            
-    print("Stage 3: Meaning")
-    canUnderstand = False
-    while canUnderstand == False:
-        term = random.choice(activeGroup)
-        if term.understanding_score < 2:
-            testMeaning(term)
-        twoCount = 0
-        for i in activeGroup:
-            if i.understanding_score == 2:
-                twoCount += 1
-        if twoCount == len(activeGroup):
-            break
-            #canUnderstand == True (ditto as line 74)
-    saveResults(activeGroup)
-    answer = input("Do you want to play again?<はい/いいえ>\n>")
-    if answer == "いいえ":
-        print("Goodbye")
-    if answer == "はい":
-        startNewQuiz()
+    try:
+        #causeError = 1 + "1"
+        print("Stage 1: Reading")
+        canRead = False
+        while canRead == False:
+            term = random.choice(activeGroup)
+            if term.reading_score < 2:
+                testReading(term)
+            twoCount = 0
+            #causeError = 1 + "1"
+            for i in activeGroup:
+                if i.reading_score == 2:
+                    twoCount += 1
+            if twoCount == len(activeGroup):
+                canRead = True
+        print("Stage 2: Writing\nGet out a pen and paper for this next round.")
+        canWrite = False
+        while canWrite == False:
+            term = random.choice(activeGroup)
+            if term.writing_score < 2:
+                testWriting(term)
+            twoCount = 0
+            for i in activeGroup:
+                if i.writing_score == 2:
+                    twoCount += 1
+            if twoCount == len(activeGroup):
+                break
+                #canWrite == True  (program stalls here for some reason)
+                
+        print("Stage 3: Meaning")
+        canUnderstand = False
+        while canUnderstand == False:
+            term = random.choice(activeGroup)
+            if term.understanding_score < 2:
+                testMeaning(term)
+            twoCount = 0
+            for i in activeGroup:
+                if i.understanding_score == 2:
+                    twoCount += 1
+            if twoCount == len(activeGroup):
+                break
+                #canUnderstand == True (ditto as line 74)
+        saveResults(activeGroup)
+    #if error before saving data
+    except Exception as err:
+        print("an error occured before we could fully save your results.")
+        d = shelve.open('N1 vocab data backup')
+        d["emergency_backup"] = activeGroup
+        d.close()
+        print(repr(err))
+    #if no error
+    else:
+        answer = input("Do you want to play again?<はい/いいえ>\n>")
+        if answer == "いいえ":
+            print("Goodbye")
+        if answer == "はい":
+            startNewQuiz()
+
+
 
 #these three functions test different aspects of the target language
 def testReading(card):
@@ -173,6 +206,16 @@ def saveResults(activeGroup):
             "repetitions": review.repetitions
             })
             print("number updated: ",result)
+    global usingBackup
+    if usingBackup:
+        willRemove = input("Do you want to remove backup data? 「はい」／「いいえ」")
+        if willRemove == "はい":
+            print("removing backup data")
+            usingBackup = False
+            d = shelve.open('N1 vocab data backup')
+            del d["emergency_backup"]
+            d.clear
+            d.close()
 
          
 
