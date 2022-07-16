@@ -12,16 +12,21 @@ class Card(Model):
     __timestamps__ = False
 
     def initializeWrongCounts(self):
+       #set wrong count to zero always
+       self.wrongRead = 0
+       self.wrongWrite = 0
+       self.wrongMean = 0
        #when studying a card for the second time, user gets chance to pass with just one correct answer for each category
        if self.hasOneSuccessfulReview():
-          self.wrongRead = 1
-          self.wrongWrite = 1
-          self.wrongMean = 1
+          self.reading_score = 1
+          self.writing_score = 1
+          self.understanding_score = 1
       #when studing for the first time 2 correct answers in a row are always required
        else:
-          self.wrongRead = 0
-          self.wrongWrite = 0
-          self.wrongMean = 0
+          self.reading_score = 0
+          self.writing_score = 0
+          self.understanding_score = 0
+
     
     def hasOneSuccessfulReview(self):
        return self.repetitions >= 1
