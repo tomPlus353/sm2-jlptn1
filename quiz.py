@@ -10,8 +10,8 @@ from supermemo2 import SMTwo
 
 
 Card = card.Card
-MIN_ACTIVE_CARDS = 3
-MAX_ACTIVE_CARDS = 3
+MIN_ACTIVE_CARDS = 10
+MAX_ACTIVE_CARDS = 10
 SKIP_QUIZ = False #skip the actual quiz as if all answers are correct
 DUE_DATE_FORMAT = "%Y-%m-%d"
 usingBackup = False
@@ -57,7 +57,7 @@ def getActiveCards():
 
 def getBackupCards():
     d = shelve.open('N1 vocab data backup')
-    print("opening backup")
+    print("checking if backup exists")
     if "emergency_backup" in d.keys():
         print("need to use backup cards")
         backupCards = d["emergency_backup"]
@@ -120,6 +120,12 @@ def quiz(activeGroup):
         d["emergency_backup"] = activeGroup
         d.close()
         print(repr(err))
+    except KeyboardInterrupt as err:
+        print("an error occured before we could fully save your results.")
+        d = shelve.open('N1 vocab data backup')
+        d["emergency_backup"] = activeGroup
+        d.close()
+        print(repr(err))
     #if no error
     else:
         answer = input("Do you want to play again?<はい/いいえ>\n>")
@@ -133,7 +139,10 @@ def quiz(activeGroup):
 #these three functions test different aspects of the target language
 def testReading(card):
     #show the Kanji form and the meaning. User has to input the correct reading.
-    answer = input(f"How do you write {card.kanji} in kana? \nHint: English definition: {card.definition}")
+    englishHint =   "" if card.hasOneSuccessfulReview() else "Hint: English definition: {card.definition}\n\n" #only give hint when no successful review yet
+    answer = input(f"How do you write {card.kanji} in kana? \n\n \
+        {englishHint} \
+    Sentence: {str.replace(card.sentence, card.kana,card.kanji)}")
     if answer != card.kana:
         card.reading_score = 0
         card.wrongRead += 1
@@ -145,22 +154,28 @@ def testReading(card):
 
 #show reading + definition. User need to write the Kanji form and self check.
 def testWriting(card):
-    print(f"\n\nHow do you write {card.kana} in Kanji? Try writing my hand. Hint: English definition: {card.definition}")
-    time.sleep(3)
-    input('Ok, did you manage to write out the Kanji? Hit "Enter" to continue.')
-    answer = input(f'{card.kana} is written as {card.kanji}.\n\nWere you correct?[はい/いいえ]')
-    if answer.lower() == "いいえ":
+    englishHint =   "" if card.hasOneSuccessfulReview() else "Hint: English definition: {card.definition}\n\n " #only give hint when no successful review yet
+    answer = input(f"\n\nHow do you write {card.kana} in Kanji?\n\n \
+        {englishHint} \
+    Example: {str.replace(card.sentence, card.kanji,card.kana)}")
+    # time.sleep(3)
+    # input('Ok, did you manage to write out the Kanji? Hit "Enter" to continue.')
+    # answer = input(f'{card.kana} is written as {card.kanji}.\n\nWere you correct?[はい/いいえ]')
+    if answer == card.kanji:
+        card.writing_score += 1
+        print(randPraise()) 
+    else:
         card.writing_score = 0
         card.wrongWrite += 1
         print("Incorrect")
-        time.sleep(1)
-    elif answer.lower() == "はい":
-        card.writing_score += 1
-        print(randPraise())
+        time.sleep(1) 
 
 #Show English Definition. User Responds with the Kanji form.
 def testMeaning(card):
-    answer = input(f"\n\nWhat does \"{card.definition}\" mean in Japanese?\nReply with Kanji form if it exists.\n")
+    sentenceNoKanji = str.replace(card.sentence, card.kanji,"_")
+    sentenceNoKanjiKana = str.replace(sentenceNoKanji, card.kana,"_")
+    answer = input(f"\n\nWhat does \"{card.definition}\" mean in Japanese?\nReply with Kanji form if it exists.\n\
+    Example: {sentenceNoKanjiKana}") 
     if answer != card.kanji:
         card.understanding_score = 0
         card.wrongMean += 1
