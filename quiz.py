@@ -22,7 +22,9 @@ def startNewQuiz():
     cards = getActiveCards()
     print("total cards found: ", cards.count())
     for index in range(len(cards)):
-        cards[index].initializeWrongCounts()
+        global usingBackup
+        if not usingBackup:
+            cards[index].initializeWrongCounts()
         if SKIP_QUIZ:
             cards[index].setPerfectQuiz();
         print(cards[index].to_dict())
@@ -115,13 +117,13 @@ def quiz(activeGroup):
         saveResults(activeGroup)
     #if error before saving data
     except Exception as err:
-        print("an error occured before we could fully save your results.")
+        print("an error occured before we could fully save your results, creating backup")
         d = shelve.open('N1 vocab data backup')
         d["emergency_backup"] = activeGroup
         d.close()
         print(repr(err))
     except KeyboardInterrupt as err:
-        print("an error occured before we could fully save your results.")
+        print("an error occured before we could fully save your results, creating backup")
         d = shelve.open('N1 vocab data backup')
         d["emergency_backup"] = activeGroup
         d.close()
