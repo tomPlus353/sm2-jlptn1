@@ -29,7 +29,8 @@ class Card(Model):
 
     
     def hasOneSuccessfulReview(self):
-       return self.repetitions >= 1
+       #false is repetitions is none type else true if greater than 1(note: 0 should really be start/default value for repetitions to avoid need to check for null..)
+       return False if not self.repetitions else self.repetitions >= 1
     
     def setPerfectQuiz(self):
        self.reading_score = 2

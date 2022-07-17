@@ -7,14 +7,22 @@ import Models.card as card
 from datetime import datetime
 import random, os, time, shelve
 from supermemo2 import SMTwo
+import pyttsx3, concurrent.futures
 
-
+#set up card data
 Card = card.Card
-MIN_ACTIVE_CARDS = 10
-MAX_ACTIVE_CARDS = 10
+MIN_ACTIVE_CARDS = 2
+MAX_ACTIVE_CARDS = 2
 SKIP_QUIZ = False #skip the actual quiz as if all answers are correct
 DUE_DATE_FORMAT = "%Y-%m-%d"
+
+#Initiate usingBackup switch
 usingBackup = False
+
+#set up voice engine
+VOICE_ID = "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\TTS_MS_JA-JP_HARUKA_11.0"
+VOICE_SPEED = 125
+
 
 
 def startNewQuiz():
@@ -37,7 +45,7 @@ def getActiveCards():
         return backupCards
     #collects 
     dueCardsCollection = Card.join("sentences", "sentences.card_id", "=", "cards.id") \
-    .where_raw('length(kanji) > 1' ) \
+    .where_raw('length(kanji) > 10000000' ) \
     .where('due_date', "<=", datetime.today().strftime(DUE_DATE_FORMAT)) \
     .group_by("cards.id") \
     .limit(MAX_ACTIVE_CARDS) \
@@ -61,12 +69,16 @@ def getBackupCards():
     d = shelve.open('N1 vocab data backup')
     print("checking if backup exists")
     if "emergency_backup" in d.keys():
-        print("need to use backup cards")
-        backupCards = d["emergency_backup"]
-        global usingBackup
-        usingBackup = True
-        d.close()
-        return backupCards
+        wantToUseBackup = input("backup detected, use backup?(はい、いいえ)")
+        #unless user doesn't say no
+        if wantToUseBackup != "いいえ":
+            print("using backup..")
+            backupCards = d["emergency_backup"]
+            global usingBackup
+            usingBackup = True
+            d.close()
+            return backupCards
+        print("not using backup..")
     d.close()
     return None
 
@@ -137,14 +149,32 @@ def quiz(activeGroup):
             startNewQuiz()
 
 
+def speakSentence(sentence):
+    engine = pyttsx3.init()
+    engine.setProperty("voice",VOICE_ID)
+    engine.setProperty('rate', VOICE_SPEED)
+    engine.say(sentence)
+    engine.runAndWait()
+    del engine
+
+def speakTextParallel(prompt, sentence):
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        future_tasks = {executor.submit(print, prompt), executor.submit(speakSentence, sentence)}
+        for future in concurrent.futures.as_completed(future_tasks):
+            try:
+                data = future.result()
+            except Exception as e:
+                print(e)
 
 #these three functions test different aspects of the target language
 def testReading(card):
     #show the Kanji form and the meaning. User has to input the correct reading.
-    englishHint =   "" if card.hasOneSuccessfulReview() else "Hint: English definition: {card.definition}\n\n" #only give hint when no successful review yet
+    englishHint =   "" if card.hasOneSuccessfulReview() else f"Hint: English definition: {card.definition}\n\n" #only give hint when no successful review yet
+    exampleSentence = f"Sentence: {str.replace(card.sentence, card.kana,card.kanji)}"
     answer = input(f"How do you write {card.kanji} in kana? \n\n \
         {englishHint} \
-    Sentence: {str.replace(card.sentence, card.kana,card.kanji)}")
+    {exampleSentence}")
+    #speakSentence(exampleSentence)
     if answer != card.kana:
         card.reading_score = 0
         card.wrongRead += 1
@@ -156,10 +186,13 @@ def testReading(card):
 
 #show reading + definition. User need to write the Kanji form and self check.
 def testWriting(card):
-    englishHint =   "" if card.hasOneSuccessfulReview() else "Hint: English definition: {card.definition}\n\n " #only give hint when no successful review yet
-    answer = input(f"\n\nHow do you write {card.kana} in Kanji?\n\n \
+    englishHint =   "" if card.hasOneSuccessfulReview() else f"Hint: English definition: {card.definition}\n\n " #only give hint when no successful review yet
+    exampleSentence = str.replace(card.sentence, card.kanji,card.kana)
+    prompt = f"\n\nHow do you write {card.kana} in Kanji?\n\n \
         {englishHint} \
-    Example: {str.replace(card.sentence, card.kanji,card.kana)}")
+    Example: {exampleSentence}"
+    speakTextParallel(prompt,exampleSentence)
+    answer = input(">")
     # time.sleep(3)
     # input('Ok, did you manage to write out the Kanji? Hit "Enter" to continue.')
     # answer = input(f'{card.kana} is written as {card.kanji}.\n\nWere you correct?[はい/いいえ]')
@@ -169,7 +202,7 @@ def testWriting(card):
     else:
         card.writing_score = 0
         card.wrongWrite += 1
-        print("Incorrect")
+        print(f"\nIncorrect. The correct answer was:\n {card.kanji}.\n")
         time.sleep(1) 
 
 #Show English Definition. User Responds with the Kanji form.
