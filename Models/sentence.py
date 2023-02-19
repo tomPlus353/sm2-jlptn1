@@ -1,4 +1,4 @@
-from config import *
+from Config.config import *
 #import card
 from orator.orm import has_one
 

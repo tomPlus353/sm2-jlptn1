@@ -1,7 +1,7 @@
 
 from datetime import date
-from config import Model
-import sentence
+from Config.config import Model
+from . import sentence
 from orator.orm import has_many,accessor
 
 import math
