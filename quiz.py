@@ -11,8 +11,8 @@ import pyttsx3, concurrent.futures
 
 #set up card data
 Card = card.Card
-MIN_ACTIVE_CARDS = 10
-MAX_ACTIVE_CARDS = 10
+MIN_ACTIVE_CARDS = 3
+MAX_ACTIVE_CARDS = 3
 SKIP_QUIZ = False #skip the actual quiz as if all answers are correct
 DUE_DATE_FORMAT = "%Y-%m-%d"
 
@@ -178,14 +178,10 @@ def testReading(card):
     if answer != card.kana:
         card.reading_score = 0
         card.wrongRead += 1
-        print(f"\n\nIncorrect. The correct answer was:\n {card.kana}.")
-        time.sleep(1.5)
-        clear()
+        feedback(card, isSuccessful=False)
     else:
         card.reading_score += 1
-        print(randPraise())
-        time.sleep(1.5)
-        clear()
+        feedback(card, isSuccessful=True)
 
 #show reading + definition. User need to write the Kanji form and self check.
 def testWriting(card):
@@ -196,17 +192,13 @@ def testWriting(card):
     Example: {exampleSentence}"
     speakTextParallel(prompt,exampleSentence)
     answer = input(">")
-    if answer == card.kanji:
-        card.writing_score += 1
-        print(randPraise())
-        time.sleep(1.5)
-        clear()
-    else:
+    if answer != card.kanji:
         card.writing_score = 0
         card.wrongWrite += 1
-        print(f"\nIncorrect. The correct answer was:\n {card.kanji}.\n")
-        time.sleep(1.5)
-        clear()
+        feedback(card, isSuccessful=False)
+    else:
+        card.writing_score += 1
+        feedback(card, isSuccessful=True)
 
 #Show English Definition. User Responds with the Kanji form.
 def testMeaning(card):
@@ -217,14 +209,11 @@ def testMeaning(card):
     if answer != card.kanji:
         card.understanding_score = 0
         card.wrongMean += 1
-        print(f"\nIncorrect. The correct answer was:\n {card.kanji},\n with the reading of:\n {card.kana}.")
-        time.sleep(1.5)
-        clear()
+        feedback(card, isSuccessful=False)
     else:
         card.understanding_score += 1
-        print(randPraise())
-        time.sleep(1.5)
-        clear()
+        feedback(card, isSuccessful=True)
+
 
 def saveResults(activeGroup):
     print("saving your results..");
@@ -275,14 +264,23 @@ def saveResults(activeGroup):
 
 
 def clear():
-    # for windows command console
-    if os.name == 'nt':
-        _ = os.system('clear')
+    # cls for windows command console else clear for linux
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 #random praise (From Ireland, just for the craic)     
 def randPraise():
     return ["Go on you good thing!","You're class!", "You legend", "You sly dog", "Sound as a pound","Sure now ye're just showing off","Savage","Grand job","You lej","You are some man"][random.randint(0,9)]
 
+def feedback(card, isSuccessful):
+    print(randPraise()) if isSuccessful else print(f"\nIncorrect!")
+    time.sleep(0.2)
+    print(f"Kanji:    {card.kanji}")
+    time.sleep(0.2)
+    print(f"Kana:    {card.kana}")    
+    time.sleep(0.2)
+    print(f"English Definition:    {card.definition}")
+    time.sleep(1.5)
+    clear()
 
 if __name__ == "__main__":
     print(sys.path)
