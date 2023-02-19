@@ -1,8 +1,8 @@
 import sys
 from typing import Collection 
 #append models to path
-sys.path.append("c:\\Users\\tomas\\Code\\myPython\\Multi-Side Flashcard Project\\SM2 Quiz\\Models")
-from Models.config import *
+sys.path.append("c:\\Users\\tomas\\Code\\myPython\\Multi-Side Flashcard Project\\SM2 Quiz")
+from Config.config import *
 import Models.card as card
 from datetime import datetime
 import random, os, time, shelve
@@ -11,8 +11,8 @@ import pyttsx3, concurrent.futures
 
 #set up card data
 Card = card.Card
-MIN_ACTIVE_CARDS = 2
-MAX_ACTIVE_CARDS = 2
+MIN_ACTIVE_CARDS = 10
+MAX_ACTIVE_CARDS = 10
 SKIP_QUIZ = False #skip the actual quiz as if all answers are correct
 DUE_DATE_FORMAT = "%Y-%m-%d"
 
@@ -45,7 +45,7 @@ def getActiveCards():
         return backupCards
     #collects 
     dueCardsCollection = Card.join("sentences", "sentences.card_id", "=", "cards.id") \
-    .where_raw('length(kanji) > 10000000' ) \
+    .where_raw('length(kanji) > 1' ) \
     .where('due_date', "<=", datetime.today().strftime(DUE_DATE_FORMAT)) \
     .group_by("cards.id") \
     .limit(MAX_ACTIVE_CARDS) \
@@ -267,10 +267,6 @@ def saveResults(activeGroup):
             d.clear
             d.close()
 
-         
-
-
-
 
 def clear():
     # for windows command console
@@ -283,6 +279,7 @@ def randPraise():
 
 
 if __name__ == "__main__":
+    print(sys.path)
     print("run as main")
     startNewQuiz()
     
