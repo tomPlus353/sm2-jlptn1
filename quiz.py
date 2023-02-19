@@ -179,10 +179,13 @@ def testReading(card):
         card.reading_score = 0
         card.wrongRead += 1
         print(f"\n\nIncorrect. The correct answer was:\n {card.kana}.")
-        time.sleep(1)
+        time.sleep(1.5)
+        clear()
     else:
         card.reading_score += 1
         print(randPraise())
+        time.sleep(1.5)
+        clear()
 
 #show reading + definition. User need to write the Kanji form and self check.
 def testWriting(card):
@@ -193,17 +196,17 @@ def testWriting(card):
     Example: {exampleSentence}"
     speakTextParallel(prompt,exampleSentence)
     answer = input(">")
-    # time.sleep(3)
-    # input('Ok, did you manage to write out the Kanji? Hit "Enter" to continue.')
-    # answer = input(f'{card.kana} is written as {card.kanji}.\n\nWere you correct?[はい/いいえ]')
     if answer == card.kanji:
         card.writing_score += 1
-        print(randPraise()) 
+        print(randPraise())
+        time.sleep(1.5)
+        clear()
     else:
         card.writing_score = 0
         card.wrongWrite += 1
         print(f"\nIncorrect. The correct answer was:\n {card.kanji}.\n")
-        time.sleep(1) 
+        time.sleep(1.5)
+        clear()
 
 #Show English Definition. User Responds with the Kanji form.
 def testMeaning(card):
@@ -215,10 +218,13 @@ def testMeaning(card):
         card.understanding_score = 0
         card.wrongMean += 1
         print(f"\nIncorrect. The correct answer was:\n {card.kanji},\n with the reading of:\n {card.kana}.")
-        time.sleep(1)
+        time.sleep(1.5)
+        clear()
     else:
         card.understanding_score += 1
         print(randPraise())
+        time.sleep(1.5)
+        clear()
 
 def saveResults(activeGroup):
     print("saving your results..");
