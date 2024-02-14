@@ -11,8 +11,8 @@ import pyttsx3, concurrent.futures
 
 #set up card data
 Card = card.Card
-MIN_ACTIVE_CARDS = 3
-MAX_ACTIVE_CARDS = 3
+MIN_ACTIVE_CARDS = 1
+MAX_ACTIVE_CARDS = 1
 SKIP_QUIZ = False #skip the actual quiz as if all answers are correct
 DUE_DATE_FORMAT = "%Y-%m-%d"
 
@@ -26,7 +26,9 @@ VOICE_SPEED = 125
 
 
 def startNewQuiz():
+    clear()
     print("start new quiz")
+    time.sleep(1.5)
     cards = getActiveCards()
     print("total cards found: ", cards.count())
     for index in range(len(cards)):
@@ -69,10 +71,11 @@ def getActiveCards():
         return  dueCardsCollection.merge(newCardsCollection) #returns collection with both completely new cards and cards that are due today.
 
 def getBackupCards():
+    clear()
     d = shelve.open('N1 vocab data backup')
     print("checking if backup exists")
     if "emergency_backup" in d.keys():
-        wantToUseBackup = input("backup detected, use backup?(はい、いいえ)")
+        wantToUseBackup = input("backup detected, use backup? 「はい」／「いいえ」")
         #unless user doesn't say no
         if wantToUseBackup != "いいえ":
             print("using backup..")
@@ -82,14 +85,19 @@ def getBackupCards():
             d.close()
             return backupCards
         print("not using backup..")
-        deleteBackup = input("delete existing backup? (はい、いいえ)") 
-        if deleteBackup == "はい":
+        willRemove = input("Do you want to remove the backup data? 「はい」／「いいえ」")
+        if willRemove == "はい":
+            print("removing backup data")
+            usingBackup = False
+            d = shelve.open('N1 vocab data backup')
             del d["emergency_backup"]
+            d.clear
     d.close()
     return None
 
 
 def quiz(activeGroup):
+    clear()
     try:
         print("Stage 1: Reading")
         canRead = False
@@ -98,7 +106,6 @@ def quiz(activeGroup):
             if term.reading_score < 2:
                 testReading(term)
             twoCount = 0
-            #causeError = 1 + "1"
             for i in activeGroup:
                 if i.reading_score == 2:
                     twoCount += 1
@@ -176,10 +183,13 @@ def testReading(card):
     #show the Kanji form and the meaning. User has to input the correct reading.
     englishHint =   "" if card.hasOneSuccessfulReview() else f"Hint: English definition: {card.definition}\n\n" #only give hint when no successful review yet
     exampleSentence = f"Sentence: {str.replace(card.sentence, card.kana,card.kanji)}"
-    answer = input(f"How do you write {card.kanji} in kana? \n\n \
+    prompt = (f"How do you write {card.kanji} in kana? \n\n \
         {englishHint} \
     {exampleSentence}")
-    #speakSentence(exampleSentence)
+    speakTextParallel(prompt,exampleSentence)
+    answer = ""
+    while answer in ["", card.kanji]:
+        answer = input("\n>") 
     if answer != card.kana:
         card.reading_score = 0
         card.wrongRead += 1
@@ -196,7 +206,9 @@ def testWriting(card):
         {englishHint} \
     Example: {exampleSentence}"
     speakTextParallel(prompt,exampleSentence)
-    answer = input(">")
+    answer = ""
+    while answer in ["", card.kana]:
+        answer = input("\n>")
     if answer != card.kanji:
         card.writing_score = 0
         card.wrongWrite += 1
@@ -207,10 +219,15 @@ def testWriting(card):
 
 #Show English Definition. User Responds with the Kanji form.
 def testMeaning(card):
-    sentenceNoKanji = str.replace(card.sentence, card.kanji,"_")
+    exampleSentence = card.sentence
+    sentenceNoKanji = str.replace(exampleSentence, card.kanji,"_")
     sentenceNoKanjiKana = str.replace(sentenceNoKanji, card.kana,"_")
-    answer = input(f"\n\nWhat does \"{card.definition}\" mean in Japanese?\nReply with Kanji form if it exists.\n\
-    Example: {sentenceNoKanjiKana}") 
+    prompt = f"\n\nWhat does \"{card.definition}\" mean in Japanese?\nReply with Kanji form if it exists.\n\
+    Example: {sentenceNoKanjiKana}"
+    speakTextParallel(prompt,exampleSentence)
+    answer = ""
+    while answer in ["", card.kana]:
+        answer = input('\n>')
     if answer != card.kanji:
         card.understanding_score = 0
         card.wrongMean += 1
@@ -284,7 +301,7 @@ def feedback(card, isSuccessful):
     print(f"Kana:    {card.kana}")    
     time.sleep(0.2)
     print(f"English Definition:    {card.definition}")
-    time.sleep(1.5)
+    time.sleep(1.0)
     clear()
 
 if __name__ == "__main__":
