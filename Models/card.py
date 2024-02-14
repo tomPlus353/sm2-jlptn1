@@ -1,7 +1,7 @@
 
 from datetime import date
-from Config.config import Model
-from . import sentence
+from Config.config import *
+from .sentence import Sentence
 from orator.orm import has_many,accessor
 
 import math
@@ -58,7 +58,12 @@ class Card(Model):
           averageQuality = 0
        return averageQuality
 
-    @has_many
+    @has_many('card_id','id',relation='sentences')
     def sentences(self):
-        Sentence = sentence.Sentence
+        #Sentence = sentence.Sentence
         return Sentence
+    
+    @property
+    def sentence(self):
+      return Sentence.where('card_id', self.id).order_by_raw('RANDOM()').first().sentence
+    
