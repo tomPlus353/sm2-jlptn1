@@ -1,6 +1,6 @@
 from Config.config import *
-#import card
-from orator.orm import has_one
+from . import card
+from orator.orm import has_one, belongs_to
 
 
 class Sentence(Model):
@@ -9,3 +9,6 @@ class Sentence(Model):
     # def card(self):
     #     Card = card.Card
     #     return Card
+    @belongs_to
+    def card(self):
+        return card.Card

@@ -36,31 +36,34 @@ def startNewQuiz():
         if SKIP_QUIZ:
             cards[index].setPerfectQuiz();
         print(cards[index].to_dict())
+        sentences = cards[index].sentences
+        sentenceCount = sentences.count()
+        print(sentenceCount)
+        for index in range(len(sentences)):
+            print(sentences[index].to_dict())
     quiz(cards)
 
 def getActiveCards():
+    ##use backup cards
     backupCards = getBackupCards()
     if usingBackup:
         print("using backup cards")
         return backupCards
-    #collects 
-    dueCardsCollection = Card.join("sentences", "sentences.card_id", "=", "cards.id") \
-    .where_raw('length(kanji) > 1' ) \
+    
+    #1. get overdue cards
+    dueCardsCollection = Card.where_raw('length(kanji) > 1' ) \
     .where('due_date', "<=", datetime.today().strftime(DUE_DATE_FORMAT)) \
-    .group_by("cards.id") \
     .limit(MAX_ACTIVE_CARDS) \
     .get()
     count = dueCardsCollection.count()
-    #first check if there are enough  cards that are due today
+    #if there are enough  cards that are due today, just return those cards
     if count >= MIN_ACTIVE_CARDS:
         return dueCardsCollection
     #else randomly select remaining cards to get the minimum number needed
     else:
         cardsNeeded = MIN_ACTIVE_CARDS - count #should always return a number greater than zero
-        newCardsCollection = Card.join("sentences", "sentences.card_id", "=", "cards.id") \
-        .where_raw('length(kanji) > 1' ) \
+        newCardsCollection = Card.where_raw('length(kanji) > 1' ) \
         .limit(cardsNeeded) \
-        .group_by("cards.id") \
         .order_by(db.raw('RANDOM()')) \
         .get() 
         return  dueCardsCollection.merge(newCardsCollection) #returns collection with both completely new cards and cards that are due today.
@@ -79,13 +82,15 @@ def getBackupCards():
             d.close()
             return backupCards
         print("not using backup..")
+        deleteBackup = input("delete existing backup? (はい、いいえ)") 
+        if deleteBackup == "はい":
+            del d["emergency_backup"]
     d.close()
     return None
 
 
 def quiz(activeGroup):
     try:
-        #causeError = 1 + "1"
         print("Stage 1: Reading")
         canRead = False
         while canRead == False:
@@ -99,7 +104,7 @@ def quiz(activeGroup):
                     twoCount += 1
             if twoCount == len(activeGroup):
                 canRead = True
-        print("Stage 2: Writing\nGet out a pen and paper for this next round.")
+        print("Stage 2: Writing\n")
         canWrite = False
         while canWrite == False:
             term = random.choice(activeGroup)
@@ -229,7 +234,7 @@ def saveResults(activeGroup):
             print("repetitions:",review.repetitions);
             dueDate = review.review_date.strftime(DUE_DATE_FORMAT);
             print("due date: ", dueDate)
-            result = db.table("cards").where("id", card.card_id).update({"due_date": dueDate, 
+            result = db.table("cards").where("id", card.id).update({"due_date": dueDate, 
             "easiness": review.easiness,
             "interval":review.interval,
             "repetitions": review.repetitions
@@ -245,7 +250,7 @@ def saveResults(activeGroup):
             print("new repetitions:",review.repetitions);
             dueDate = review.review_date.strftime(DUE_DATE_FORMAT);
             print("due date: ", dueDate)
-            result = db.table("cards").where("id", card.card_id).update({"due_date": dueDate, 
+            result = db.table("cards").where("id", card.id).update({"due_date": dueDate, 
             "easiness": review.easiness,
             "interval":review.interval,
             "repetitions": review.repetitions
@@ -283,7 +288,7 @@ def feedback(card, isSuccessful):
     clear()
 
 if __name__ == "__main__":
-    print(sys.path)
+    #print(sys.path)
     print("run as main")
     startNewQuiz()
     
