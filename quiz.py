@@ -12,7 +12,7 @@ import pyttsx3, concurrent.futures
 #set up card data
 Card = card.Card
 MIN_ACTIVE_CARDS = 1
-MAX_ACTIVE_CARDS = 1
+MAX_ACTIVE_CARDS = 4
 SKIP_QUIZ = False #skip the actual quiz as if all answers are correct
 DUE_DATE_FORMAT = "%Y-%m-%d"
 
@@ -28,7 +28,10 @@ VOICE_SPEED = 125
 def startNewQuiz():
     clear()
     print("start new quiz")
-    time.sleep(1.5)
+    time.sleep(0.5)
+    global MAX_ACTIVE_CARDS 
+    MAX_ACTIVE_CARDS = askUserActiveCards()
+    time.sleep(0.5)
     cards = getActiveCards()
     print("total cards found: ", cards.count())
     for index in range(len(cards)):
@@ -44,6 +47,22 @@ def startNewQuiz():
         for index in range(len(sentences)):
             print(sentences[index].to_dict())
     quiz(cards)
+
+def askUserActiveCards():
+    while True:
+        cards = input("how many cards do you want to study?")
+        #validate if number
+        try:
+            cardsNum = int(cards)
+        except Error:
+            print("error occured, enter an integer")
+            continue
+        #validate if positive int
+        if cardsNum < 1:
+            print("enter a number greater than or equal to 1")
+            continue
+        elif cardsNum >= 1:
+            return cardsNum
 
 def getActiveCards():
     ##use backup cards
