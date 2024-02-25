@@ -207,7 +207,7 @@ def testReading(card):
     {exampleSentence}")
     speakTextParallel(prompt,exampleSentence)
     answer = ""
-    while answer in ["", card.kanji]:
+    while answer == "" or (answer == card.kanji and card.kanji != card.kana):
         answer = input("\n>") 
     if answer != card.kana:
         card.reading_score = 0
@@ -226,7 +226,7 @@ def testWriting(card):
     Example: {exampleSentence}"
     speakTextParallel(prompt,exampleSentence)
     answer = ""
-    while answer in ["", card.kana]:
+    while answer == "" or (answer == card.kana and card.kana != card.kanji):
         answer = input("\n>")
     if answer != card.kanji:
         card.writing_score = 0
@@ -245,7 +245,7 @@ def testMeaning(card):
     Example: {sentenceNoKanjiKana}"
     speakTextParallel(prompt,exampleSentence)
     answer = ""
-    while answer in ["", card.kana]:
+    while answer == "" or (answer == card.kana and card.kana != card.kanji):
         answer = input('\n>')
     if answer != card.kanji:
         card.understanding_score = 0
