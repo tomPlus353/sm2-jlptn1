@@ -11,8 +11,7 @@ import pyttsx3, concurrent.futures
 
 #set up card data
 Card = card.Card
-MIN_ACTIVE_CARDS = 1
-MAX_ACTIVE_CARDS = 4
+NUM_ACTIVE_CARDS = 1
 SKIP_QUIZ = False #skip the actual quiz as if all answers are correct
 DUE_DATE_FORMAT = "%Y-%m-%d"
 
@@ -29,8 +28,8 @@ def startNewQuiz():
     clear()
     print("start new quiz")
     time.sleep(0.5)
-    global MAX_ACTIVE_CARDS 
-    MAX_ACTIVE_CARDS = askUserActiveCards()
+    global NUM_ACTIVE_CARDS 
+    NUM_ACTIVE_CARDS = askUserActiveCards()
     time.sleep(0.5)
     cards = getActiveCards()
     print("total cards found: ", cards.count())
@@ -74,15 +73,15 @@ def getActiveCards():
     #1. get overdue cards
     dueCardsCollection = Card.where_raw('length(kanji) > 1' ) \
     .where('due_date', "<=", datetime.today().strftime(DUE_DATE_FORMAT)) \
-    .limit(MAX_ACTIVE_CARDS) \
+    .limit(NUM_ACTIVE_CARDS) \
     .get()
     count = dueCardsCollection.count()
     #if there are enough  cards that are due today, just return those cards
-    if count >= MIN_ACTIVE_CARDS:
+    if count >= NUM_ACTIVE_CARDS:
         return dueCardsCollection
     #else randomly select remaining cards to get the minimum number needed
     else:
-        cardsNeeded = MIN_ACTIVE_CARDS - count #should always return a number greater than zero
+        cardsNeeded = NUM_ACTIVE_CARDS - count #should always return a number greater than zero
         newCardsCollection = Card.where_raw('length(kanji) > 1' ) \
         .limit(cardsNeeded) \
         .order_by(db.raw('RANDOM()')) \
@@ -201,7 +200,7 @@ def speakTextParallel(prompt, sentence):
 def testReading(card):
     #show the Kanji form and the meaning. User has to input the correct reading.
     englishHint =   "" if card.hasOneSuccessfulReview() else f"Hint: English definition: {card.definition}\n\n" #only give hint when no successful review yet
-    exampleSentence = f"Sentence: {str.replace(card.sentence, card.kana,card.kanji)}"
+    exampleSentence = f"{str.replace(card.sentence, card.kana,card.kanji)}"
     prompt = (f"How do you write {card.kanji} in kana? \n\n \
         {englishHint} \
     {exampleSentence}")
