@@ -47,6 +47,12 @@ const App = () => {
     setCurrentState('sessionFeedback');
   };
 
+  const handlePlayAgain = () => {
+    setCurrentState('intro');
+    setSessionId('');
+    setNumberOfQuestions('');
+  };
+
   useEffect(() => {
     if (currentState === 'intro') {
       setSessionId('');
@@ -111,7 +117,11 @@ const App = () => {
       <p>Score: {quizScore.correct}/{quizScore.total}</p>
       <p>Percentage: {(quizScore.correct / quizScore.total) * 100}%</p>
       <br/>
-      {/* You can add UI elements or emojis to indicate performance */}
+      {(quizScore.correct / quizScore.total) * 100 >= 80 ? "😊😊😊" : "😒😒😒"}
+      <br/>
+      <button onClick={handlePlayAgain}>Play Again</button>
+      <br/>
+      
     </div>
   );
 
