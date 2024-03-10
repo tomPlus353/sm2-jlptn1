@@ -32,8 +32,10 @@ def start_quiz():
     for i in range(1,1+number_of_questions):
         # Here, you should fetch questions from your question database or API
         question = {
+            "question_id": i+1,
             "question_text": f"Question {i+1}?",
             "example_sentence": f"Example sentence for question {i+1}.",
+            "answer": f"{i+1}",
             "question_type": "WRITE"  # Assuming all questions are of WRITE type for simplicity
         }
         sessions[session_id]['questions'].append(question)
@@ -50,17 +52,18 @@ def next_question():
     questions = session.get('questions', [])
     current_question_index = session.get('current_question_index', 0)
     print("current_question_index: ",current_question_index)
-    if current_question_index >= len(questions):
+    if current_question_index > len(questions):
         return jsonify({"message": "No more questions in this session"}), 200
     
-    current_question = questions[current_question_index]
+    current_question = questions[current_question_index-1]
     session['current_question_index'] += 1
     
     return jsonify(current_question)
 
 @app.route('/api/submitAnswer', methods=['POST'])
 def submit_answer():
-    data = request.json
+    data = request.json;
+    print("data object from request to submit_answer", data)
     session_id = data.get('sessionId')
     user_answer = data.get('userAnswer')
     
@@ -71,22 +74,31 @@ def submit_answer():
     current_question_index = session.get('current_question_index', 0)
     quiz_score = session.get('quiz_score', {'correct': 0, 'total': 0})
     questions = session.get('questions', [])
-    current_question = questions[current_question_index - 1]
+    filteredArray = [v for i,v in enumerate(questions) if questions[i]["question_id"] == data["question_id"]];
+    actual_answer = filteredArray[0]["answer"];
+    ##current_question = questions[current_question_index - 1]
     
-    # Here you should implement your logic to check the user's answer
-    # and update the quiz score accordingly
-    # For simplicity, let's assume the user's answer is always correct
-    quiz_score['correct'] += 1
+    # Check if answer is correct
+    isCorrect = user_answer == actual_answer;
+    if isCorrect:
+        quiz_score['correct'] += 1;
     
     # Check if quiz ended
-    if current_question_index >= quiz_score['total']:
+    if current_question_index > quiz_score['total']:
         session['quiz_ended'] = True
     
-    return jsonify({
-        "feedback": "Your answer is correct!",
-        "quizScore": quiz_score,
-        "quizEnded": session['quiz_ended']
-    })
+    if isCorrect:
+        return jsonify({
+            "feedback": "Your answer is correct!",
+            "quizScore": quiz_score,
+            "quizEnded": session['quiz_ended']
+        })
+    else:
+        return jsonify({
+            "feedback": "Your answer is wrong!",
+            "quizScore": quiz_score,
+            "quizEnded": session['quiz_ended']
+        })
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
