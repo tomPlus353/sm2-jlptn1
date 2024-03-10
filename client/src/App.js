@@ -6,6 +6,7 @@ const App = () => {
   const [currentState, setCurrentState] = useState('intro');
   const [sessionId, setSessionId] = useState('');
   const [numberOfQuestions, setNumberOfQuestions] = useState('');
+  const [currentQuestionNumber, setCurrentQuestionNumber] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState({});
   const [userAnswer, setUserAnswer] = useState('');
   const [feedback, setFeedback] = useState('');
@@ -15,19 +16,35 @@ const App = () => {
   const handleStartQuiz = async () => {
     const response = await axios.post('/api/startQuiz', { numberOfQuestions });
     setSessionId(response.data.sessionId);
+    handleFirstQuestion(response.data.sessionId);
+    // setCurrentState('question');
+  };
+
+  const handleFirstQuestion = async (nonStateSessionId) => {
+    const response = await axios.get(`/api/nextQuestion?sessionId=${nonStateSessionId}`);
+    console.log("response to handleNextQuestions: "+ JSON.stringify(response.data))
+    setCurrentQuestion(response.data);
+    setCurrentQuestionNumber(currentQuestionNumber +1);
+    setUserAnswer('');
     setCurrentState('question');
   };
 
   const handleNextQuestion = async () => {
     const response = await axios.get(`/api/nextQuestion?sessionId=${sessionId}`);
+    console.log("response to handleNextQuestions: "+ JSON.stringify(response.data))
     setCurrentQuestion(response.data);
+    setCurrentQuestionNumber(currentQuestionNumber +1);
     setUserAnswer('');
     setCurrentState('question');
   };
 
   const handleSubmitAnswer = async () => {
+    console.log("current question is " + JSON.stringify(currentQuestion))
+    var question_id = currentQuestion.question_id;
+    console.log("question id is " + question_id);
     const response = await axios.post('/api/submitAnswer', {
       sessionId,
+      question_id,
       userAnswer,
     });
     setFeedback(response.data.feedback);
@@ -57,11 +74,12 @@ const App = () => {
     if (currentState === 'intro') {
       setSessionId('');
       setNumberOfQuestions('');
-    } else if (currentState === 'question') {
+      setCurrentQuestionNumber(0);
       setCurrentQuestion({});
+      setQuizEnded(false);
+    } else if (currentState === 'question') {
       setUserAnswer('');
       setFeedback('');
-      setQuizEnded(false);
     }
   }, [currentState]);
 
@@ -78,9 +96,9 @@ const App = () => {
     </div>
   );
 
-  const renderQuestionState = () => (
-    <div>
-      <h2>Question {quizScore.total + 1}</h2>
+  const renderQuestionState = function() {
+    return <div>
+      <h2>Question {currentQuestionNumber}</h2>
       <p>{currentQuestion.question_text}</p>
       <input
         type="text"
@@ -94,7 +112,7 @@ const App = () => {
       />
       <button onClick={handleSubmitAnswer}>Submit Answer</button>
     </div>
-  );
+  };
 
   const renderQuestionFeedbackState = () => (
     <div>
