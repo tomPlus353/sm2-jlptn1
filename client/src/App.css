@@ -1,0 +1,15 @@
+body {
+  margin: 0px 10px;
+  padding: 0px 10px;
+}
+
+.state-container  {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+div,h1,p,button,input {
+  border: solid 1px rgb(231, 217, 16);
+  flex: 1;
+}
