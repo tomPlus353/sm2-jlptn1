@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import "./App.css";
 //import ReactDOM from 'react-dom';
 import axios from './axiosConfig';
 
@@ -84,22 +85,25 @@ const App = () => {
   }, [currentState]);
 
   const renderIntroState = () => (
-    <div>
+    <div className="state-container">
       <h1>Welcome to the Quiz App!</h1>
       <p>Please enter the number of questions you'd like to answer:</p>
       <input
         type="number"
         value={numberOfQuestions}
         onChange={(e) => setNumberOfQuestions(e.target.value)}
+        style={{ marginBottom: '10px' }} // Add margin-bottom to the input
+
       />
       <button onClick={handleStartQuiz}>Start Quiz</button>
     </div>
   );
 
   const renderQuestionState = function() {
-    return <div>
+    return <div className="state-container" >
       <h2>Question {currentQuestionNumber}</h2>
       <p>{currentQuestion.question_text}</p>
+      <p>{currentQuestion.example_sentence}</p>
       <input
         type="text"
         value={userAnswer}
@@ -109,13 +113,14 @@ const App = () => {
             handleSubmitAnswer();
           }
         }}
+        style={{ marginBottom: '10px' }} // Add margin-bottom to the input
       />
       <button onClick={handleSubmitAnswer}>Submit Answer</button>
     </div>
   };
 
   const renderQuestionFeedbackState = () => (
-    <div>
+    <div className="state-container">
       <p>{feedback}</p>
       <p>Score: {quizScore.correct}/{quizScore.total}</p>
       {quizEnded ? (
@@ -130,14 +135,16 @@ const App = () => {
   );
 
   const renderSessionFeedbackState = () => (
-    <div>
+    <div className="state-container">
       <p>Quiz session feedback:</p>
       <p>Score: {quizScore.correct}/{quizScore.total}</p>
       <p>Percentage: {(quizScore.correct / quizScore.total) * 100}%</p>
-      <br/>
+      <p>
       {(quizScore.correct / quizScore.total) * 100 >= 80 ? "😊😊😊" : "😒😒😒"}
-      <br/>
-      <button onClick={handlePlayAgain}>Play Again</button>
+      </p>
+      <button 
+      style={{ marginTop: '16px' }} // Add margin-bottom to the input
+      onClick={handlePlayAgain}>Play Again</button>
       <br/>
       
     </div>
