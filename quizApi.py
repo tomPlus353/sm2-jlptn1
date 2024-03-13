@@ -32,10 +32,10 @@ def start_quiz():
     for i in range(1,1+number_of_questions):
         # Here, you should fetch questions from your question database or API
         question = {
-            "question_id": i+1,
-            "question_text": f"Question {i+1}?",
-            "example_sentence": f"Example sentence for question {i+1}.",
-            "answer": f"{i+1}",
+            "question_id": i,
+            "question_text": f"Question {i}?",
+            "example_sentence": f"Example sentence for question {i}.",
+            "answer": f"{i}",
             "question_type": "WRITE"  # Assuming all questions are of WRITE type for simplicity
         }
         sessions[session_id]['questions'].append(question)
