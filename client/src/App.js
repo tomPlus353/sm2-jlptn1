@@ -18,7 +18,6 @@ const App = () => {
     const response = await axios.post('/api/startQuiz', { numberOfQuestions });
     setSessionId(response.data.sessionId);
     handleFirstQuestion(response.data.sessionId);
-    // setCurrentState('question');
   };
 
   const handleFirstQuestion = async (nonStateSessionId) => {
@@ -53,12 +52,12 @@ const App = () => {
       correct: response.data.quizScore.correct,
       total: response.data.quizScore.total,
     });
+
     if (response.data.quizEnded) {
       setQuizEnded(true);
-      setCurrentState('questionFeedback');
-    } else {
-      setCurrentState('questionFeedback');
     }
+    
+     setCurrentState('questionFeedback');
   };
 
   const handleEndQuiz = async () => {

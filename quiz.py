@@ -25,14 +25,19 @@ VOICE_SPEED = 125
 
 
 def startNewQuiz():
+    #handle getting number of active cards from user
     clear()
     print("start new quiz")
     time.sleep(0.5)
     global NUM_ACTIVE_CARDS 
     NUM_ACTIVE_CARDS = askUserActiveCards()
     time.sleep(0.5)
+    
+    #fetch data
     cards = getActiveCards()
     print("total cards found: ", cards.count())
+    
+    #for preprocessing and debugging
     for index in range(len(cards)):
         global usingBackup
         if not usingBackup:
@@ -45,6 +50,8 @@ def startNewQuiz():
         print(sentenceCount)
         for index in range(len(sentences)):
             print(sentences[index].to_dict())
+    
+    #run quiz
     quiz(cards)
 
 def askUserActiveCards():
