@@ -132,10 +132,10 @@ const App = () => {
       {quizEnded ? (
         <div>
           <p>Quiz is over!</p>
-          <button onClick={handleEndQuiz}>End Quiz</button>
+          <button autoFocus onClick={handleEndQuiz}>End Quiz</button>
         </div>
       ) : (
-        <button onClick={handleNextQuestion}>Next Question</button>
+        <button autoFocus onClick={handleNextQuestion}>Next Question</button>
       )}
     </div>
   );
