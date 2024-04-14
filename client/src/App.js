@@ -56,7 +56,7 @@ const App = () => {
     if (response.data.quizEnded) {
       setQuizEnded(true);
     }
-    
+
      setCurrentState('questionFeedback');
   };
 
@@ -89,8 +89,14 @@ const App = () => {
       <p>Please enter the number of questions you'd like to answer:</p>
       <input
         type="number"
+        autoFocus 
         value={numberOfQuestions}
         onChange={(e) => setNumberOfQuestions(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            handleStartQuiz();
+          }
+        }}
         style={{ marginBottom: '10px' }} // Add margin-bottom to the input
 
       />
@@ -105,6 +111,7 @@ const App = () => {
       <p>{currentQuestion.example_sentence}</p>
       <input
         type="text"
+        autoFocus 
         value={userAnswer}
         onChange={(e) => setUserAnswer(e.target.value)}
         onKeyDown={(e) => {
