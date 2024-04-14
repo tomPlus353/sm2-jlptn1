@@ -57,10 +57,11 @@ def convertActiveCardsToSession(cardsCollection):
     return session
 
 def printCardsDict(cardsCollection):
-    for index in range(len(cardsCollection)):
-        print(cardsCollection[index].to_dict())
-        sentences = cardsCollection[index].sentences
-        sentenceCount = sentences.count()
-        print(sentenceCount)
-        for index in range(len(sentences)):
-            print(sentences[index].to_dict())
+    pass #the following really slows down the creation of the quiz, so only uncomment for debugging
+    # for index in range(len(cardsCollection)):
+    #     print(cardsCollection[index].to_dict())
+    #     sentences = cardsCollection[index].sentences
+    #     sentenceCount = sentences.count()
+    #     print(sentenceCount)
+    #     for index in range(len(sentences)):
+    #         print(sentences[index].to_dict())
