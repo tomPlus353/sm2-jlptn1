@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-from utils.cards import getActiveCardsCollection, convertActiveCardsToSession, printCardsDict
+import utils.cards as cardUtils 
 
 app = Flask(__name__)
 CORS(app)
@@ -27,9 +27,9 @@ def start_quiz():
     session_id = 'session1'  # You can generate a unique session ID here
 
     #Get active cards
-    cardsCollection = getActiveCardsCollection(number_of_questions)
-    printCardsDict(cardsCollection)
-    session = convertActiveCardsToSession(cardsCollection)
+    cardsCollection = cardUtils.getActiveCardsCollection(number_of_questions)
+    cardUtils.printCardsDict(cardsCollection)
+    session = cardUtils.convertActiveCardsToSession(cardsCollection)
     sessions[session_id] = session
     return jsonify({"sessionId": session_id})
 
@@ -74,6 +74,10 @@ def submit_answer():
     isCorrect = user_answer == actual_answer;
     if isCorrect:
         quiz_score['correct'] += 1;
+        try:
+          saveResult
+        except Exception:
+            return jsonify({"error": "Error when saving result to the DB"}), 500
 
     # Check if quiz ended(check if the last Q was that final Q)
     if current_question_index == quiz_score['total']:
