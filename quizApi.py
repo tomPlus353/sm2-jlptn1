@@ -77,7 +77,9 @@ def submit_answer():
     if isCorrect:
         quiz_score['correct'] += 1;
     try:
-        cardUtils.saveCardAnswer(questions[current_question_index-1]["question_id"], isCorrect) #save current answer as either correct or incorrect to update smtwo due date
+        cardId = questions[current_question_index-1]["question_id"]
+        answerDetails = cardUtils.getAnswerDetails(cardId)
+        cardUtils.saveCardAnswer(cardId, isCorrect) #save current answer as either correct or incorrect to update smtwo due date
     except Exception as e:
         print(traceback.format_exc())
         return jsonify({"error": "Error when saving result to the DB", "trace": traceback.format_exc() }), 500
@@ -89,12 +91,14 @@ def submit_answer():
     if isCorrect:
         return jsonify({
             "feedback": "Your answer is correct!",
+            "answer": answerDetails,
             "quizScore": quiz_score,
             "quizEnded": session['quiz_ended']
         })
     else:
         return jsonify({
             "feedback": "Your answer is wrong!",
+            "answer": answerDetails,
             "quizScore": quiz_score,
             "quizEnded": session['quiz_ended']
         })
