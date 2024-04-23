@@ -1,6 +1,9 @@
 from datetime import datetime
 import Models.card as card
 from Config.config import *
+from supermemo2 import SMTwo
+
+
 """
 const
 """
@@ -41,7 +44,7 @@ def convertActiveCardsToSession(cardsCollection):
         'quiz_ended': False
     }
     print(session)
-    # # Create session with questions
+    # Create session with questions
     for i in range(cardsCollection.count()):
         # Here, you should fetch questions from your question database or API
         card = cardsCollection[i]
@@ -55,6 +58,46 @@ def convertActiveCardsToSession(cardsCollection):
         }
         session["questions"].append(question)
     return session
+
+def saveCardAnswer(cardId, isCorrect):
+    card = Card.find(cardId) #find card to update
+    print(cardId)
+    print(card.id)
+    print(card.kanji)
+    #return "early stop for checking right card"
+    quality = 5 if isCorrect == True else 1 #calculate quality based on answer
+    if not card.due_date:
+        print("update for first review")
+        print("quality:", quality);
+        review = SMTwo.first_review(quality);
+        print("review_date:",review.review_date);
+        print("easiness:",review.easiness);
+        print("interval:",review.interval);
+        print("repetitions:",review.repetitions);
+        dueDate = review.review_date.strftime(DUE_DATE_FORMAT);
+        print("due date: ", dueDate)
+        result = db.table("cards").where("id", card.id).update({"due_date": dueDate, 
+        "easiness": review.easiness,
+        "interval":review.interval,
+        "repetitions": review.repetitions
+        })
+        print("number updated: ",result)
+    else:
+        print("update for 2nd review+")
+        print("quality:", quality);
+        review = SMTwo(card.easiness, card.interval, card.repetitions).review(quality);
+        print("next review_date:",review.review_date);
+        print("new easiness:",review.easiness);
+        print("new interval:",review.interval);
+        print("new repetitions:",review.repetitions);
+        dueDate = review.review_date.strftime(DUE_DATE_FORMAT);
+        print("due date: ", dueDate)
+        result = db.table("cards").where("id", card.id).update({"due_date": dueDate, 
+        "easiness": review.easiness,
+        "interval":review.interval,
+        "repetitions": review.repetitions
+        })
+        print("number updated: ",result)
 
 def printCardsDict(cardsCollection):
     pass #the following really slows down the creation of the quiz, so only uncomment for debugging
