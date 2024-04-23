@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import utils.cards as cardUtils 
+import traceback
 
 app = Flask(__name__)
 CORS(app)
@@ -36,6 +37,7 @@ def start_quiz():
 @app.route('/api/nextQuestion', methods=['GET'])
 def next_question():
     session_id = request.args.get('sessionId')
+    print("session id from client is: ",session_id)
     session = sessions.get(session_id)
     if not session:
         return jsonify({"error": "Invalid session ID"}), 400
@@ -74,10 +76,11 @@ def submit_answer():
     isCorrect = user_answer == actual_answer;
     if isCorrect:
         quiz_score['correct'] += 1;
-        try:
-          saveResult
-        except Exception:
-            return jsonify({"error": "Error when saving result to the DB"}), 500
+    try:
+        cardUtils.saveCardAnswer(questions[current_question_index-1]["question_id"], isCorrect) #save current answer as either correct or incorrect to update smtwo due date
+    except Exception as e:
+        print(traceback.format_exc())
+        return jsonify({"error": "Error when saving result to the DB", "trace": traceback.format_exc() }), 500
 
     # Check if quiz ended(check if the last Q was that final Q)
     if current_question_index == quiz_score['total']:
