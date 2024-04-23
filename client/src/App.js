@@ -13,6 +13,8 @@ const App = () => {
   const [feedback, setFeedback] = useState('');
   const [quizEnded, setQuizEnded] = useState(false);
   const [quizScore, setQuizScore] = useState({ correct: 0, total: 0 });
+  const [rightAnswers, setRightAnswers] = useState({ rightEng: "", rightKana: "", rightKanji: "" });
+
 
   const handleStartQuiz = async () => {
     const response = await axios.post('/api/startQuiz', { numberOfQuestions });
@@ -48,6 +50,19 @@ const App = () => {
       userAnswer,
     });
     setFeedback(response.data.feedback);
+
+  //  {
+  //     "rightKanji": card.kanji,
+  //     "rightKana": card.kana,
+  //     "rightEng": card.defintion
+  // }
+    setRightAnswers({
+      rightKanji: response.data.answer.rightKanji,
+      rightKana: response.data.answer.rightKana,
+      rightEng: response.data.answer.rightEng,
+    });
+
+    //quiz score correct and total
     setQuizScore({
       correct: response.data.quizScore.correct,
       total: response.data.quizScore.total,
@@ -128,6 +143,9 @@ const App = () => {
   const renderQuestionFeedbackState = () => (
     <div className="state-container">
       <p>{feedback}</p>
+      <p>{rightAnswers.rightKanji}</p>
+      <p>{rightAnswers.rightKana}</p>
+      <p>{rightAnswers.rightEng}</p>
       <p>Score: {quizScore.correct}/{quizScore.total}</p>
       {quizEnded ? (
         <div>

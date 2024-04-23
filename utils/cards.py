@@ -59,6 +59,14 @@ def convertActiveCardsToSession(cardsCollection):
         session["questions"].append(question)
     return session
 
+def getAnswerDetails(cardId):
+    card = Card.find(cardId)
+    return {
+        "rightKanji": "Kanji: " + card.kanji,
+        "rightKana": "Kana: " + card.kana,
+        "rightEng": "English Definition: " + card.definition
+    }
+
 def saveCardAnswer(cardId, isCorrect):
     card = Card.find(cardId) #find card to update
     print(cardId)
