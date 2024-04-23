@@ -78,8 +78,8 @@ def submit_answer():
         quiz_score['correct'] += 1;
     try:
         cardId = questions[current_question_index-1]["question_id"]
-        answerDetails = cardUtils.getAnswerDetails(cardId)
         cardUtils.saveCardAnswer(cardId, isCorrect) #save current answer as either correct or incorrect to update smtwo due date
+        answerDetails = cardUtils.getAnswerDetails(cardId)
     except Exception as e:
         print(traceback.format_exc())
         return jsonify({"error": "Error when saving result to the DB", "trace": traceback.format_exc() }), 500

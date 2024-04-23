@@ -64,7 +64,8 @@ def getAnswerDetails(cardId):
     return {
         "rightKanji": "Kanji: " + card.kanji,
         "rightKana": "Kana: " + card.kana,
-        "rightEng": "English Definition: " + card.definition
+        "rightEng": "English Definition: " + card.definition,
+        "dueDate": "Next Due Date is: " + card.due_date
     }
 
 def saveCardAnswer(cardId, isCorrect):

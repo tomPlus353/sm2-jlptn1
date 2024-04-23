@@ -13,7 +13,7 @@ const App = () => {
   const [feedback, setFeedback] = useState('');
   const [quizEnded, setQuizEnded] = useState(false);
   const [quizScore, setQuizScore] = useState({ correct: 0, total: 0 });
-  const [rightAnswers, setRightAnswers] = useState({ rightEng: "", rightKana: "", rightKanji: "" });
+  const [rightAnswers, setRightAnswers] = useState({ rightEng: "", rightKana: "", rightKanji: "", dueDate: "" });
 
 
   const handleStartQuiz = async () => {
@@ -50,16 +50,19 @@ const App = () => {
       userAnswer,
     });
     setFeedback(response.data.feedback);
-
-  //  {
-  //     "rightKanji": card.kanji,
-  //     "rightKana": card.kana,
-  //     "rightEng": card.defintion
+  
+  //  python ref
+  //    {
+  //     "rightKanji": "Kanji: " + card.kanji,
+  //     "rightKana": "Kana: " + card.kana,
+  //     "rightEng": "English Definition: " + card.definition,
+  //     "dueDate": "Next Due Date is: " + card.due_date
   // }
     setRightAnswers({
       rightKanji: response.data.answer.rightKanji,
       rightKana: response.data.answer.rightKana,
       rightEng: response.data.answer.rightEng,
+      dueDate: response.data.answer.dueDate,
     });
 
     //quiz score correct and total
@@ -146,6 +149,7 @@ const App = () => {
       <p>{rightAnswers.rightKanji}</p>
       <p>{rightAnswers.rightKana}</p>
       <p>{rightAnswers.rightEng}</p>
+      <p>{rightAnswers.dueDate}</p>
       <p>Score: {quizScore.correct}/{quizScore.total}</p>
       {quizEnded ? (
         <div>
