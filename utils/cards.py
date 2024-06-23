@@ -59,6 +59,34 @@ def convertActiveCardsToSession(cardsCollection):
         session["questions"].append(question)
     return session
 
+def convertActiveCardsToSession2(cardsCollection):
+    session = {
+        'questions': [],
+        'current_question_index': 0,
+        'quiz_score': {'correct': 0, 'total': cardsCollection.count()},
+        'quiz_ended': False
+    }
+    print(session)
+    # Create session with questions
+    for i in range(cardsCollection.count()):
+        # Here, you should fetch questions from your question database or API
+        card = cardsCollection[i]
+        generateQuestion(card, )
+        session["questions"].append(question)
+    return session
+
+def generateQuestion(card, questionType):
+    englishHint = "" if card.hasOneSuccessfulReview() else f" Hint: English definition: {card.definition}\n\n" #only give hint when no successful review yet
+    question = {
+            "question_id": card.id,
+            "question_text": f"What is the reading of{card.kanji}?" + englishHint,
+            "example_sentence": f"{str.replace(card.sentence, card.kana,card.kanji)}",
+            "answer": card.kana,
+            "question_type": "READ"  # Assuming all questions are of READ type for simplicity
+        }
+    return question
+
+
 def getAnswerDetails(cardId):
     card = Card.find(cardId)
     return {
