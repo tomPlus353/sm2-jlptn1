@@ -2,6 +2,7 @@ from datetime import datetime
 import Models.card as card
 from Config.config import *
 from supermemo2 import SMTwo
+from random import sample
 
 
 """
@@ -36,7 +37,7 @@ def getActiveCardsCollection(numActiveCards):
         .get() 
         return  dueCardsCollection.merge(newCardsCollection) #returns collection with both completely new cards and cards that are due today.
 
-def convertActiveCardsToSession(cardsCollection):
+def convertActiveCardsToSessionOld(cardsCollection):
     session = {
         'questions': [],
         'current_question_index': 0,
@@ -59,30 +60,51 @@ def convertActiveCardsToSession(cardsCollection):
         session["questions"].append(question)
     return session
 
-def convertActiveCardsToSession2(cardsCollection):
+def convertActiveCardsToSession(cardsCollection):
     session = {
         'questions': [],
         'current_question_index': 0,
         'quiz_score': {'correct': 0, 'total': cardsCollection.count()},
         'quiz_ended': False
     }
-    print(session)
     # Create session with questions
     for i in range(cardsCollection.count()):
         # Here, you should fetch questions from your question database or API
+        questionType = sample(["READ","WRITE","MEANING"],1)[0] 
         card = cardsCollection[i]
-        generateQuestion(card, )
+        question = generateQuestion(card,questionType)
         session["questions"].append(question)
     return session
 
 def generateQuestion(card, questionType):
+    
     englishHint = "" if card.hasOneSuccessfulReview() else f" Hint: English definition: {card.definition}\n\n" #only give hint when no successful review yet
-    question = {
+
+    if questionType== "READ":
+        question = {
             "question_id": card.id,
             "question_text": f"What is the reading of{card.kanji}?" + englishHint,
             "example_sentence": f"{str.replace(card.sentence, card.kana,card.kanji)}",
             "answer": card.kana,
-            "question_type": "READ"  # Assuming all questions are of READ type for simplicity
+            "question_type": questionType 
+        }
+
+    if questionType== "WRITE":
+        question = {
+            "question_id": card.id,
+            "question_text": f"What is the way to write {card.kana}?" + englishHint,
+            "example_sentence": f"{str.replace(card.sentence, card.kanji,card.kana)}",
+            "answer": card.kanji,
+            "question_type": questionType 
+        }
+
+    if questionType== "MEANING":
+        question = {
+            "question_id": card.id,
+            "question_text": f"\n\nWhat does {card.definition} mean in Japanese?\nReply with Kanji form if it exists.\n",
+            "example_sentence": f"{card.sentence}",
+            "answer": card.kanji,
+            "question_type": questionType 
         }
     return question
 
