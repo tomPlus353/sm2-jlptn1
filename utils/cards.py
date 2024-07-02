@@ -37,29 +37,6 @@ def getActiveCardsCollection(numActiveCards):
         .get() 
         return  dueCardsCollection.merge(newCardsCollection) #returns collection with both completely new cards and cards that are due today.
 
-def convertActiveCardsToSessionOld(cardsCollection):
-    session = {
-        'questions': [],
-        'current_question_index': 0,
-        'quiz_score': {'correct': 0, 'total': cardsCollection.count()},
-        'quiz_ended': False
-    }
-    print(session)
-    # Create session with questions
-    for i in range(cardsCollection.count()):
-        # Here, you should fetch questions from your question database or API
-        card = cardsCollection[i]
-        englishHint = "" if card.hasOneSuccessfulReview() else f"Hint: English definition: {card.definition}\n\n" #only give hint when no successful review yet
-        question = {
-            "question_id": card.id,
-            "question_text": f"What is the reading of{card.kanji}?" + englishHint,
-            "example_sentence": f"{str.replace(card.sentence, card.kana,card.kanji)}",
-            "answer": card.kana,
-            "question_type": "READ"  # Assuming all questions are of READ type for simplicity
-        }
-        session["questions"].append(question)
-    return session
-
 def convertActiveCardsToSession(cardsCollection):
     session = {
         'questions': [],
@@ -97,12 +74,16 @@ def generateQuestion(card, questionType):
             "answer": card.kanji,
             "question_type": questionType 
         }
-
+ 
     if questionType== "MEANING":
+        #construct example sentence for meaning
+        exampleSentence = card.sentence 
+        sentenceNoKanji = str.replace(exampleSentence, card.kanji,"_")
+        sentenceNoKanjiKana = str.replace(sentenceNoKanji, card.kana,"_")
         question = {
             "question_id": card.id,
             "question_text": f"\n\nWhat does {card.definition} mean in Japanese?\nReply with Kanji form if it exists.\n",
-            "example_sentence": f"{card.sentence}",
+            "example_sentence": f"{sentenceNoKanjiKana}",
             "answer": card.kanji,
             "question_type": questionType 
         }
