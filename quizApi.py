@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import utils.cards as cardUtils 
 import traceback
+from uuid import uuid4
 
 app = Flask(__name__)
 CORS(app)
@@ -25,7 +26,7 @@ def start_quiz():
     #generate session info
     data = request.json
     number_of_questions = int(data.get('numberOfQuestions', 0))
-    session_id = 'session1'  # You can generate a unique session ID here
+    session_id =  str(uuid4())  # You can generate a unique session ID here
 
     #Get active cards
     cardsCollection = cardUtils.getActiveCardsCollection(number_of_questions)
