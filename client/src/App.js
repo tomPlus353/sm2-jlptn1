@@ -146,6 +146,7 @@ const App = () => {
   const renderQuestionFeedbackState = () => (
     <div className="state-container">
       <p>{feedback}</p>
+      <p>Answer: {userAnswer}</p>
       <p>{rightAnswers.rightKanji}</p>
       <p>{rightAnswers.rightKana}</p>
       <p>{rightAnswers.rightEng}</p>
@@ -172,7 +173,8 @@ const App = () => {
       </p>
       <button 
       style={{ marginTop: '16px' }} // Add margin-bottom to the input
-      onClick={handlePlayAgain}>Play Again</button>
+      onClick={handlePlayAgain}
+      autoFocus>Play Again</button>
       <br/>
       
     </div>
