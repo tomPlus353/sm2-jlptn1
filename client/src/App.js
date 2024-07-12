@@ -14,12 +14,14 @@ const App = () => {
   const [quizEnded, setQuizEnded] = useState(false);
   const [quizScore, setQuizScore] = useState({ correct: 0, total: 0 });
   const [rightAnswers, setRightAnswers] = useState({ rightEng: "", rightKana: "", rightKanji: "", dueDate: "" });
-
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleStartQuiz = async () => {
+    setIsLoading(true)
     const response = await axios.post('/api/startQuiz', { numberOfQuestions });
     setSessionId(response.data.sessionId);
     handleFirstQuestion(response.data.sessionId);
+    setIsLoading(false)
   };
 
   const handleFirstQuestion = async (nonStateSessionId) => {
@@ -118,6 +120,7 @@ const App = () => {
         style={{ marginBottom: '10px' }} // Add margin-bottom to the input
 
       />
+      {isLoading && <div className="loading-circle" />}
       <button onClick={handleStartQuiz}>Start Quiz</button>
     </div>
   );

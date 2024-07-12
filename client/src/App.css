@@ -1,4 +1,4 @@
-/* body {
+se/* body {
   margin: 0px 10px;
   padding: 0px 10px;
 }
@@ -14,6 +14,7 @@ div,h1,p,button,input {
   flex: 1;
 } */
 
+/* global styles */
 body {
   margin: 0px 10px;
   padding: 0px 10px;
@@ -21,12 +22,6 @@ body {
   color: #e0e0e0; /* Light text color */
 }
 
-.state-container {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  background-color: #1e1e1e; /* Slightly lighter dark background */
-}
 
 div, h1, p, button, input {
   border: solid 1px rgb(231, 217, 16);
@@ -37,4 +32,26 @@ div, h1, p, button, input {
 
 button {
   cursor: pointer; /* Add a pointer cursor for buttons */
+}
+
+/* classes */
+.state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background-color: #1e1e1e; /* Slightly lighter dark background */
+}
+
+.loading-circle {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 2s linear infinite;
+}
+/*  */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
