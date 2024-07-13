@@ -120,8 +120,12 @@ const App = () => {
         style={{ marginBottom: '10px' }} // Add margin-bottom to the input
 
       />
-      {isLoading && <div className="loading-circle" />}
+      {isLoading 
+      ?
+      <div className="loading-circle" />
+      :
       <button onClick={handleStartQuiz}>Start Quiz</button>
+    }
     </div>
   );
 
