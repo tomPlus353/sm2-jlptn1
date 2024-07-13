@@ -49,7 +49,21 @@ button {
   width: 30px;
   height: 30px;
   animation: spin 2s linear infinite;
+  position: relative;
 }
+
+.loading-circle::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #f3f3f3;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
 /*  */
 @keyframes spin {
   0% { transform: rotate(0deg); }
