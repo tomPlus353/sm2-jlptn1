@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import "./App.css";
-//import ReactDOM from 'react-dom';
 import axios from './axiosConfig';
 
 const App = () => {
@@ -208,4 +207,3 @@ const App = () => {
   return <div>{currentStateComponent}</div>;
 };
 export default App
-// ReactDOM.render(<App />, document.getElementById('root'));
