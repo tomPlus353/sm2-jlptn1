@@ -60,7 +60,7 @@ def generateQuestion(card, questionType):
     if questionType== "READ":
         question = {
             "question_id": card.id,
-            "question_text": f"What is the reading of{card.kanji}?" + englishHint,
+            "question_text": f"What is the reading of {card.kanji}?" + englishHint,
             "example_sentence": f"{str.replace(card.sentence, card.kana,card.kanji)}",
             "answer": card.kana,
             "question_type": questionType 
