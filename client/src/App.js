@@ -14,6 +14,8 @@ const App = () => {
   const [quizScore, setQuizScore] = useState({ correct: 0, total: 0 });
   const [rightAnswers, setRightAnswers] = useState({ rightEng: "", rightKana: "", rightKanji: "", dueDate: "" });
   const [isLoading, setIsLoading] = useState(false)
+  const [isValidationError, setIsValidationError] = useState(false)
+
 
   const handleStartQuiz = async () => {
     setIsLoading(true)
@@ -45,6 +47,20 @@ const App = () => {
     console.log("current question is " + JSON.stringify(currentQuestion))
     var question_id = currentQuestion.question_id;
     console.log("question id is " + question_id);
+    //client side validation
+    //if the user types the hint by accident, when the hint is not also the answer, then trigger validation 
+    if (!currentQuestion.hasSameKanaAndKanji && 
+      userAnswer == currentQuestion.hint &&
+      userAnswer != currentQuestion.answer
+    ) {
+      setIsValidationError(true)
+      return
+    }
+
+    //passed validation so reset/make sure validation error is set to false
+    setIsValidationError(false)
+
+    // check answer on api
     const response = await axios.post('/api/submitAnswer', {
       sessionId,
       question_id,
@@ -52,13 +68,13 @@ const App = () => {
     });
     setFeedback(response.data.feedback);
   
-  //  python ref
-  //    {
-  //     "rightKanji": "Kanji: " + card.kanji,
-  //     "rightKana": "Kana: " + card.kana,
-  //     "rightEng": "English Definition: " + card.definition,
-  //     "dueDate": "Next Due Date is: " + card.due_date
-  // }
+    //  python ref
+    //    {
+    //     "rightKanji": "Kanji: " + card.kanji,
+    //     "rightKana": "Kana: " + card.kana,
+    //     "rightEng": "English Definition: " + card.definition,
+    //     "dueDate": "Next Due Date is: " + card.due_date
+    // }
     setRightAnswers({
       rightKanji: response.data.answer.rightKanji,
       rightKana: response.data.answer.rightKana,
@@ -146,6 +162,9 @@ const App = () => {
         style={{ marginBottom: '10px' }} // Add margin-bottom to the input
       />
       <button onClick={handleSubmitAnswer}>Submit Answer</button>
+      {isValidationError && (
+        <p className='val-msg'>You typed the hint by accident!</p>
+      ) }
     </div>
   };
 

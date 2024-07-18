@@ -44,7 +44,7 @@ input {
   padding: 0.5rem; /* Add padding to input fields */
   border-radius: 4px; /* Round the corners */
 }
-
+/* class styles */
 .state-container {
   display: flex;
   flex-direction: column;
@@ -52,6 +52,9 @@ input {
   background-color: #1e1e1e; /* Slightly lighter dark background */
   padding: 1rem; /* Add padding to container */
   border-radius: 4px; /* Round the corners */
+}
+.val-msg {
+color: red;
 }
 
 .loading-circle {

@@ -63,7 +63,9 @@ def generateQuestion(card, questionType):
             "question_text": f"What is the reading of {card.kanji}?" + englishHint,
             "example_sentence": f"{str.replace(card.sentence, card.kana,card.kanji)}",
             "answer": card.kana,
-            "question_type": questionType 
+            "question_type": questionType,
+            "hasSameKanaAndKanji": 1 if card.kanji == card.kana else 0,
+            "hint": card.kanji, 
         }
 
     if questionType== "WRITE":
@@ -72,7 +74,9 @@ def generateQuestion(card, questionType):
             "question_text": f"What is the way to write {card.kana}?" + englishHint,
             "example_sentence": f"{str.replace(card.sentence, card.kanji,card.kana)}",
             "answer": card.kanji,
-            "question_type": questionType 
+            "question_type": questionType,
+            "hasSameKanaAndKanji": 1 if card.kanji == card.kana else 0,
+            "hint": card.kana, 
         }
  
     if questionType== "MEANING":
@@ -85,7 +89,9 @@ def generateQuestion(card, questionType):
             "question_text": f"\n\nWhat does {card.definition} mean in Japanese?\nReply with Kanji form if it exists.\n",
             "example_sentence": f"{sentenceNoKanjiKana}",
             "answer": card.kanji,
-            "question_type": questionType 
+            "question_type": questionType,
+            "hasSameKanaAndKanji": 1 if card.kanji == card.kana else 0,
+            "hint": card.definition, 
         }
     return question
 
